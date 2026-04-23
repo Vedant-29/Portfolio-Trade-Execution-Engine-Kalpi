@@ -22,8 +22,13 @@ or rebalance) in a single click, and surfaces typed results.
 
 ## Demo
 
-_A short walkthrough video of the end-to-end frontend flow will be
-linked here._
+A short end-to-end walkthrough — broker connect → payload upload →
+execute → results + history.
+
+https://github.com/vedantagarwal/Portfolio-Trade-Execution-Engine-Kalpi/raw/main/docs/demo.mp4
+
+> If the inline player doesn't load, the video is at
+> [`docs/demo.mp4`](./docs/demo.mp4).
 
 ---
 
@@ -151,8 +156,8 @@ templates that were then fixed.
 ### 1. Clone and prepare environment
 
 ```bash
-git clone <this-repo>
-cd kalpi-builder-execution-engine
+git clone https://github.com/vedantagarwal/Portfolio-Trade-Execution-Engine-Kalpi.git
+cd Portfolio-Trade-Execution-Engine-Kalpi
 cp .env.example .env
 ```
 
