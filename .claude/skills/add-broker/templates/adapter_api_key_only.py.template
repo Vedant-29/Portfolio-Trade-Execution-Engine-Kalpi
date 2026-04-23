@@ -1,0 +1,122 @@
+"""{{BROKER_DISPLAY_NAME}} adapter.
+
+Auth flow (auth_kind = "api_key_only"):
+  No user-facing redirect or form. The user configures the API key +
+  secret in .env once; when they click "Connect", we call the SDK's
+  server-to-server token exchange (typically using a checksum or HMAC
+  derived from the secret + a timestamp). Groww is the precedent.
+
+Reference docs:
+  - {{DEV_PORTAL_URL}}
+
+Do not touch src/schemas/session.py to add new fields — any
+broker-specific overflow goes into `session.extras` as a named key.
+"""
+
+from __future__ import annotations
+
+from src.adapters.base import BrokerAdapter
+from src.adapters.errors import (
+    AmoNotSupportedError,
+    AuthError,
+    BrokerError,
+    InvalidOrderError,
+    RateLimitError,
+    TransientBrokerError,
+)
+from src.adapters.{{BROKER_NAME}}.mapping import (
+    EXCHANGE_MAP,
+    PRICE_TYPE_MAP,
+    PRODUCT_MAP,
+)
+from src.config import get_settings
+from src.schemas import (
+    Action,
+    BrokerSession,
+    Holding,
+    OrderRequest,
+    OrderResult,
+)
+
+
+class {{BROKER_CLASSNAME}}Adapter(BrokerAdapter):
+    name = "{{BROKER_NAME}}"
+    display_name = "{{BROKER_DISPLAY_NAME}}"
+    auth_kind = "api_key_only"
+
+    def __init__(
+        self,
+        api_key: str | None = None,
+        api_secret: str | None = None,
+    ) -> None:
+        settings = get_settings()
+        self._api_key = api_key or settings.{{BROKER_NAME}}_api_key
+        self._api_secret = api_secret or settings.{{BROKER_NAME}}_api_secret
+        if not (self._api_key and self._api_secret):
+            raise AuthError(
+                "{{BROKER_DISPLAY_NAME}} adapter requires "
+                "{{BROKER_NAME_UPPER}}_API_KEY and {{BROKER_NAME_UPPER}}_API_SECRET",
+                broker="{{BROKER_NAME}}",
+            )
+
+    def authenticate_from_env(self) -> BrokerSession:
+        """Server-to-server token fetch — no user interaction."""
+        # TODO: replace with the real SDK call
+        # from {{SDK_PACKAGE}} import Client
+        # data = Client.get_access_token(
+        #     api_key=self._api_key, secret=self._api_secret
+        # )
+        raise NotImplementedError(
+            "Fill in {{BROKER_DISPLAY_NAME}} token fetch via its SDK."
+        )
+
+        # Typical shape:
+        # return BrokerSession(
+        #     broker="{{BROKER_NAME}}",
+        #     access_token=data["token"],
+        #     token_header_format="Bearer {access_token}",
+        # )
+
+    def authorization_header(self, session: BrokerSession) -> dict[str, str]:
+        return {
+            "Authorization": session.token_header_format.format(
+                access_token=session.access_token
+            ),
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+    def place_order(self, session: BrokerSession, req: OrderRequest) -> OrderResult:
+        """Place a single order via the broker's SDK.
+
+        If the broker's SDK does not expose an AMO parameter (as with
+        Groww today), raise AmoNotSupportedError when req.amo is True
+        rather than silently submitting a regular order.
+        """
+        if req.amo:
+            # Delete this block if the broker DOES support AMO and
+            # wire req.amo through to the SDK instead.
+            raise AmoNotSupportedError(
+                "{{BROKER_DISPLAY_NAME}}'s SDK does not currently expose "
+                "an AMO parameter. Place the order during market hours "
+                "(9:15–15:30 IST) or use another broker.",
+                code="AMO_NOT_SUPPORTED",
+                broker="{{BROKER_NAME}}",
+            )
+        # TODO: call the broker's SDK place-order method. Map canonical
+        # values via mapping.py:
+        #     EXCHANGE_MAP[req.exchange]
+        #     PRICE_TYPE_MAP[req.price_type]
+        #     PRODUCT_MAP[req.product]
+        raise NotImplementedError
+
+    def cancel_order(self, session: BrokerSession, broker_order_id: str) -> None:
+        raise NotImplementedError
+
+    def get_order_status(
+        self, session: BrokerSession, broker_order_id: str
+    ) -> OrderResult:
+        raise NotImplementedError
+
+    def get_holdings(self, session: BrokerSession) -> list[Holding]:
+        raise NotImplementedError

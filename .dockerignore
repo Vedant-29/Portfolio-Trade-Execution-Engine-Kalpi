@@ -1,0 +1,48 @@
+# Version control
+.git
+.gitignore
+
+# Python caches / venvs
+.venv
+venv
+__pycache__
+*.py[cod]
+*.egg-info
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+dist
+build
+
+# Node — we only want the SOURCE in the build context, the image builds
+# fresh node_modules inside the frontend-builder stage.
+frontend/node_modules
+frontend/dist
+frontend/.vite
+frontend/.turbo
+frontend/coverage
+
+# Local env + data
+.env
+.env.local
+*.sqlite
+*.db
+data/
+logs/
+
+# Editors / OS
+.DS_Store
+.idea
+.vscode
+
+# Docs + tests + the assignment PDF don't belong in the production image
+tests/
+*.md
+!README.md
+Kalpi*.pdf
+
+# Planning / working docs
+PLAN.md
+docs/

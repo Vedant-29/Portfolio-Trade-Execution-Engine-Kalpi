@@ -1,0 +1,3 @@
+from src.adapters.{{BROKER_NAME}}.adapter import {{BROKER_CLASSNAME}}Adapter
+
+__all__ = ["{{BROKER_CLASSNAME}}Adapter"]

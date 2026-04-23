@@ -1,0 +1,30 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kalpi-builder
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      # In Docker both the API and the built frontend are served on :8000,
+      # so the OAuth callback must bounce back to the same origin — not
+      # to the Vite dev server (which only runs in `make dev-all`).
+      PUBLIC_BASE_URL: http://localhost:8000
+      FRONTEND_BASE_URL: http://localhost:8000
+      SESSION_DB_PATH: /app/data/sessions.sqlite
+    volumes:
+      # Persist encrypted sessions across container restarts.
+      - kalpi-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  kalpi-data:

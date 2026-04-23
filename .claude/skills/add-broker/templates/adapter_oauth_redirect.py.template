@@ -1,0 +1,151 @@
+"""{{BROKER_DISPLAY_NAME}} adapter.
+
+Auth flow (auth_kind = "oauth_redirect"):
+  1. Frontend redirects browser to the broker's login URL with
+     response_type=code&client_id=API_KEY&redirect_uri=...&state=...
+  2. Broker redirects back to our /callback with a code / auth_code /
+     request_token (broker-specific param name).
+  3. We exchange that token for an access token via the SDK.
+
+Reference docs:
+  - {{DEV_PORTAL_URL}}
+  - (if OpenAlgo supported this broker, cite the path here;
+     otherwise delete this line)
+
+Do not touch src/schemas/session.py to add new fields — any
+broker-specific overflow goes into `session.extras` as a named key.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+
+from src.adapters.base import BrokerAdapter
+from src.adapters.errors import (
+    AuthError,
+    BrokerError,
+    InvalidOrderError,
+    RateLimitError,
+    TransientBrokerError,
+    classify_message,
+)
+from src.adapters.{{BROKER_NAME}}.mapping import (
+    EXCHANGE_MAP,
+    PRICE_TYPE_MAP,
+    PRODUCT_MAP,
+)
+from src.config import get_settings
+from src.schemas import (
+    Action,
+    BrokerSession,
+    Holding,
+    OrderRequest,
+    OrderResult,
+)
+
+
+class {{BROKER_CLASSNAME}}Adapter(BrokerAdapter):
+    name = "{{BROKER_NAME}}"
+    display_name = "{{BROKER_DISPLAY_NAME}}"
+    auth_kind = "oauth_redirect"
+
+    def __init__(
+        self,
+        api_key: str | None = None,
+        api_secret: str | None = None,
+        redirect_uri: str | None = None,
+    ) -> None:
+        settings = get_settings()
+        self._api_key = api_key or settings.{{BROKER_NAME}}_api_key
+        self._api_secret = api_secret or settings.{{BROKER_NAME}}_api_secret
+        self._redirect_uri = redirect_uri or (
+            f"{settings.public_base_url}/auth/{{BROKER_NAME}}/callback"
+        )
+        if not (self._api_key and self._api_secret):
+            raise AuthError(
+                "{{BROKER_DISPLAY_NAME}} adapter requires "
+                "{{BROKER_NAME_UPPER}}_API_KEY and {{BROKER_NAME_UPPER}}_API_SECRET",
+                broker="{{BROKER_NAME}}",
+            )
+
+    def build_login_url(self, redirect_uri: str, state: str) -> str:
+        """Return the broker's OAuth authorization URL.
+
+        Replace the URL below with the actual endpoint for
+        {{BROKER_DISPLAY_NAME}} — check their developer docs.
+        """
+        return (
+            "https://EXAMPLE-BROKER.com/oauth/authorize"
+            f"?response_type=code&client_id={self._api_key}"
+            f"&redirect_uri={redirect_uri}&state={state}"
+        )
+
+    def exchange_code_for_session(self, params: Mapping[str, str]) -> BrokerSession:
+        """Exchange the authorization code for an access token.
+
+        Different brokers use different param names for the
+        authorization code — check which one applies:
+            Zerodha: request_token    Upstox: code    Fyers: auth_code
+        """
+        code = params.get("code") or params.get("request_token") or params.get("auth_code")
+        if not code:
+            raise AuthError(
+                "{{BROKER_DISPLAY_NAME}} callback missing authorization code",
+                broker="{{BROKER_NAME}}",
+            )
+
+        # TODO: replace with the real SDK call
+        # from {{SDK_PACKAGE}} import SomeAuthClient
+        # data = SomeAuthClient(...).exchange(code)
+        raise NotImplementedError(
+            "Fill in {{BROKER_DISPLAY_NAME}} token exchange using "
+            "its official SDK ({{SDK_PACKAGE}}) or raw httpx call."
+        )
+
+        # Final shape:
+        # return BrokerSession(
+        #     broker="{{BROKER_NAME}}",
+        #     access_token=data["access_token"],
+        #     token_header_format="Bearer {access_token}",  # override per broker
+        #     refresh_token=data.get("refresh_token"),
+        #     user_id=data.get("user_id"),
+        #     extras={"any_extra_stuff": data.get("whatever")},
+        # )
+
+    def authorization_header(self, session: BrokerSession) -> dict[str, str]:
+        return {
+            "Authorization": session.token_header_format.format(
+                access_token=session.access_token
+            ),
+            "Accept": "application/json",
+        }
+
+    def place_order(self, session: BrokerSession, req: OrderRequest) -> OrderResult:
+        """Place a single order.
+
+        AMO note:
+          - If the broker supports AMO (after-market orders), forward
+            `req.amo` to the broker's equivalent flag. See how Upstox /
+            AngelOne / Fyers handle this in their adapters.
+          - If the broker rejects AMO+MARKET combos (like Zerodha),
+            raise AmoNotSupportedError before hitting the API.
+          - If the SDK doesn't expose AMO at all (like Groww), raise
+            AmoNotSupportedError with a clear message.
+        """
+        # TODO: call the broker's SDK / REST place-order method.
+        # Map canonical → broker wire values via mapping.py:
+        #     EXCHANGE_MAP[req.exchange]
+        #     PRICE_TYPE_MAP[req.price_type]
+        #     PRODUCT_MAP[req.product]
+        raise NotImplementedError
+
+    def cancel_order(self, session: BrokerSession, broker_order_id: str) -> None:
+        raise NotImplementedError
+
+    def get_order_status(
+        self, session: BrokerSession, broker_order_id: str
+    ) -> OrderResult:
+        raise NotImplementedError
+
+    def get_holdings(self, session: BrokerSession) -> list[Holding]:
+        raise NotImplementedError

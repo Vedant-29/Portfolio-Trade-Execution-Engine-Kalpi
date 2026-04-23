@@ -1,0 +1,51 @@
+"""Canonical ↔ {{BROKER_DISPLAY_NAME}} field translation.
+
+Every adapter uses a mapping module to translate our canonical
+enums (Action / Exchange / PriceType / ProductType) into the
+broker's wire vocabulary. This file should contain ONLY the
+translation tables + any pure helper functions (e.g. symbol
+builders). No HTTP, no session objects, no broker client instances.
+
+Reference docs: {{DEV_PORTAL_URL}}
+"""
+
+from __future__ import annotations
+
+from src.schemas import Action, Exchange, PriceType, ProductType
+
+# Fill in with the actual broker wire values.
+
+PRODUCT_MAP = {
+    ProductType.CNC: "CNC",      # REPLACE with broker's delivery code
+    ProductType.MIS: "INTRADAY", # REPLACE with broker's intraday code
+}
+
+PRICE_TYPE_MAP = {
+    PriceType.MARKET: "MARKET",  # REPLACE if broker uses a different code
+    PriceType.LIMIT: "LIMIT",
+}
+
+# Only needed if the broker doesn't accept the literal strings "BUY"/"SELL"
+# on the wire. Delete this block if Action enum values work as-is
+# (Zerodha / Upstox / AngelOne / Groww accept "BUY"/"SELL" directly).
+# Fyers uses numeric (1, -1); Paytm uses single-char (B, S).
+ACTION_MAP = {
+    Action.BUY: "BUY",
+    Action.SELL: "SELL",
+}
+
+EXCHANGE_MAP = {
+    Exchange.NSE: "NSE",
+    Exchange.BSE: "BSE",
+}
+
+# Optional: add broker-specific helpers here (symbol builders, segment
+# lookups, instrument-token resolvers, etc.). Precedents:
+#   fyers/mapping.py       → fyers_symbol() builds "NSE:RELIANCE-EQ"
+#   groww/mapping.py       → segment_for() returns SEGMENT_CASH
+#   paytm/mapping.py       → segment_for() returns "E"
+#
+# If the broker needs a numeric security_id / instrument_key / symbol_token
+# lookup (Paytm, Upstox, AngelOne do), put the resolver here or in
+# adapter.py as a cached method. See paytm/adapter.py::_security_id
+# for the "fail loudly with a clear TODO" scaffold pattern.
