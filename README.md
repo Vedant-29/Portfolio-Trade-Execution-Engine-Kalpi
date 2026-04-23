@@ -25,7 +25,7 @@ or rebalance) in a single click, and surfaces typed results.
 A short end-to-end walkthrough — broker connect → payload upload →
 execute → results + history.
 
-[![Watch the demo walkthrough](./docs/demo.gif)]
+![Watch the demo walkthrough](./docs/demo.gif)
 
 > An full video is also available at [`docs/demo.mp4`](./docs/demo.mp4).
 
