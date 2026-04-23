@@ -8,7 +8,7 @@ or rebalance) in a single click, and surfaces typed results.
   <em>Submitted for the</em> <strong>Kalpi Builder Assignment</strong>
   <em>by</em> <a href="https://www.kalpicapital.com/"><em>Kalpi Capital</em></a>.
   &nbsp;·&nbsp;
-  <a href="./Kalpi%20Builder%20Assignment.pdf">Original brief (PDF)</a>
+  <a href="./ASSIGNMENT.md">Original brief</a>
 </p>
 
 > **Live-test status**
@@ -240,7 +240,7 @@ the underlying command.
 
 | Path | Purpose |
 |---|---|
-| [`Kalpi Builder Assignment.pdf`](./Kalpi%20Builder%20Assignment.pdf) | Original assignment brief |
+| [`ASSIGNMENT.md`](./ASSIGNMENT.md) | Original assignment brief (verbatim, contact details stripped) |
 | [`src/schemas/`](./src/schemas/) | Canonical shapes — orders, portfolio, sessions, holdings |
 | [`src/adapters/`](./src/adapters/) | One folder per broker (`zerodha`, `upstox`, `angelone`, `fyers`, `groww`, `paytm`) plus `BrokerAdapter` base class and error taxonomy |
 | [`src/services/`](./src/services/) | Auth, execution, notification |
