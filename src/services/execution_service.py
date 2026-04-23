@@ -92,6 +92,8 @@ class ExecutionService:
                     action=Action.BUY,
                     quantity=item.quantity,
                     product=item.product,
+                    price_type=item.price_type,
+                    price=item.price,
                     amo=item.amo,
                 )
                 for item in req.first_time
@@ -113,6 +115,8 @@ class ExecutionService:
                     action=Action.SELL,
                     quantity=s.quantity,
                     product=s.product,
+                    price_type=s.price_type,
+                    price=s.price,
                     amo=s.amo,
                 )
             )
@@ -124,6 +128,8 @@ class ExecutionService:
                     action=Action.BUY,
                     quantity=b.quantity,
                     product=b.product,
+                    price_type=b.price_type,
+                    price=b.price,
                     amo=b.amo,
                 )
             )
@@ -136,6 +142,8 @@ class ExecutionService:
                     action=action,
                     quantity=abs(a.delta),
                     product=a.product,
+                    price_type=a.price_type,
+                    price=a.price,
                     amo=a.amo,
                 )
             )

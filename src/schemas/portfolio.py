@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime
+from decimal import Decimal
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from src.schemas.orders import Exchange, OrderResult, ProductType
+from src.schemas.orders import Exchange, OrderResult, PriceType, ProductType
 
 
 class _SymbolItem(BaseModel):
@@ -14,7 +15,15 @@ class _SymbolItem(BaseModel):
     symbol: str = Field(min_length=1)
     exchange: Exchange
     product: ProductType = ProductType.CNC
+    price_type: PriceType = PriceType.MARKET
+    price: Decimal | None = None
     amo: bool = False
+
+    @model_validator(mode="after")
+    def _limit_orders_need_price(self) -> _SymbolItem:
+        if self.price_type is PriceType.LIMIT and self.price is None:
+            raise ValueError("LIMIT items require `price`")
+        return self
 
 class FirstTimeItem(_SymbolItem):
     """A stock to BUY in a fresh portfolio."""

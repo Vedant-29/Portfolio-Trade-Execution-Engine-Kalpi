@@ -58,6 +58,39 @@ def test_first_time_places_buy_for_every_item(
         assert r.request.action is Action.BUY
     assert [o.symbol for o in FakeAdapter.order_log] == ["RELIANCE", "TCS", "INFY"]
 
+def test_first_time_forwards_price_type_and_price_to_adapter(
+    auth_service: AuthService, execution_service: ExecutionService
+) -> None:
+    """Regression for a bug where the frontend AMO+LIMIT payload
+    carrying price_type and price was silently stripped by the
+    schema (extra='ignore'), causing the Zerodha adapter to see
+    MARKET+AMO and reject with AMO_NOT_SUPPORTED. price_type and
+    price on payload items must reach the adapter unchanged."""
+    from decimal import Decimal
+
+    sid = _save_fake_session(auth_service)
+    req = PortfolioExecuteRequest(
+        broker="fake",
+        session_id=sid,
+        mode="first_time",
+        first_time=[
+            FirstTimeItem(
+                symbol="IDEA",
+                exchange=Exchange.NSE,
+                quantity=1,
+                price_type="LIMIT",
+                price=Decimal("9.50"),
+                amo=True,
+            ),
+        ],
+    )
+    execution_service.execute(req)
+    sent = FakeAdapter.order_log[0]
+    assert sent.price_type.value == "LIMIT"
+    assert sent.price == Decimal("9.50")
+    assert sent.amo is True
+
+
 def test_first_time_honors_product_type(
     auth_service: AuthService, execution_service: ExecutionService
 ) -> None:
