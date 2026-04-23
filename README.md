@@ -25,10 +25,13 @@ or rebalance) in a single click, and surfaces typed results.
 A short end-to-end walkthrough — broker connect → payload upload →
 execute → results + history.
 
-https://github.com/vedantagarwal/Portfolio-Trade-Execution-Engine-Kalpi/raw/main/docs/demo.mp4
-
-> If the inline player doesn't load, the video is at
-> [`docs/demo.mp4`](./docs/demo.mp4).
+<video
+  src="https://github.com/vedantagarwal/Portfolio-Trade-Execution-Engine-Kalpi/raw/main/docs/demo.mp4"
+  controls
+  width="720">
+  Your browser does not support the video tag.
+  <a href="./docs/demo.mp4">Download the demo video</a>
+</video>
 
 ---
 
